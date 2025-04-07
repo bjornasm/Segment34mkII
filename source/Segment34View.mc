@@ -6,6 +6,7 @@ import Toybox.WatchUi;
 import Toybox.Time;
 import Toybox.Weather;
 import Toybox.Complications;
+
 using Toybox.Position;
 
 class Segment34View extends WatchUi.WatchFace {
@@ -154,26 +155,26 @@ class Segment34View extends WatchUi.WatchFace {
 
     const clockBgText = "#####";
     (:MIP) const bottomFieldBg = "#";
-    (:Round390) const bottomFieldBg = "#";
-    (:Round416) const bottomFieldBg = "#";
-    (:Round454) const bottomFieldBg = "#";
-    (:Round360) const bottomFieldBg = "$";
+    // (:Round390) const bottomFieldBg = "#";
+    // (:Round416) const bottomFieldBg = "#";
+    // (:Round454) const bottomFieldBg = "#";
+    // (:Round360) const bottomFieldBg = "$";
 
     (:Round240) const bottomFieldWidths = [3, 3, 3, 0];
-    (:Round260) const bottomFieldWidths = [3, 4, 3, 0];
-    (:Round280) const bottomFieldWidths = [4, 3, 4, 0];
-    (:Round360) const bottomFieldWidths = [3, 4, 3, 0];
-    (:Round390) const bottomFieldWidths = [4, 3, 4, 0];
-    (:Round416) const bottomFieldWidths = [4, 4, 4, 0];
-    (:Round454) const bottomFieldWidths = [4, 4, 4, 0];
+    // (:Round260) const bottomFieldWidths = [3, 4, 3, 0];
+    // (:Round280) const bottomFieldWidths = [4, 3, 4, 0];
+    // (:Round360) const bottomFieldWidths = [3, 4, 3, 0];
+    // (:Round390) const bottomFieldWidths = [4, 3, 4, 0];
+    // (:Round416) const bottomFieldWidths = [4, 4, 4, 0];
+    // (:Round454) const bottomFieldWidths = [4, 4, 4, 0];
 
     (:Round240) const barWidth = 3;
-    (:Round260) const barWidth = 3;
-    (:Round280) const barWidth = 3;
-    (:Round360) const barWidth = 3;
-    (:Round390) const barWidth = 4;
-    (:Round416) const barWidth = 4;
-    (:Round454) const barWidth = 4;
+    // (:Round260) const barWidth = 3;
+    // (:Round280) const barWidth = 3;
+    // (:Round360) const barWidth = 3;
+    // (:Round390) const barWidth = 4;
+    // (:Round416) const barWidth = 4;
+    // (:Round454) const barWidth = 4;
 
     function initialize() {
         WatchFace.initialize();
@@ -1372,8 +1373,60 @@ class Segment34View extends WatchUi.WatchFace {
                 } catch(e) {
                     // Complication not found
                 }
+            } else {
+                var totalDistance = 0.0;
+
+                var currentWeekday = Gregorian.info(Time.now(), Time.FORMAT_SHORT).day_of_week;
+                var currentHour = Gregorian.info(Time.now(), Time.FORMAT_SHORT).hour;
+                var currentMinute = Gregorian.info(Time.now(), Time.FORMAT_SHORT).min;
+                var currentSecond = Gregorian.info(Time.now(), Time.FORMAT_SHORT).sec;
+
+                var timeToStartOfWeek = new Time.Duration(((currentWeekday-1) * 86400)-((24-currentHour)*3600)-((60-currentMinute)*60)-(currentSecond));
+                var startOfWeek = Time.now().subtract(timeToStartOfWeek);
+                
+                var garminUnixOffset = new Time.Duration(631065600); // Adjust for garmintime
+                var startOfWeekGarmin = startOfWeek.subtract(garminUnixOffset); 
+                var iter = UserProfile.getUserActivityHistory();
+                
+
+                // var logString = "";
+
+                var activity = iter.next(); 
+                //                 while (activity != null) {
+                while (activity != null) {
+                    if (activity.distance != null && (activity.startTime.value() >= startOfWeekGarmin.value())){
+                        // var rawInfo = Gregorian.utcInfo(activity.startTime, Time.FORMAT_MEDIUM);
+                        // var rawDate = Lang.format(
+                        //     "$1$:$2$:$3$ $4$ $5$ $6$ $7$",
+                        //     [
+                        //         rawInfo.hour,
+                        //         rawInfo.min,
+                        //         rawInfo.sec,
+                        //         rawInfo.day_of_week,
+                        //         rawInfo.day,
+                        //         rawInfo.month,
+                        //         rawInfo.year
+                        //     ]
+                        // );
+
+
+                        // var rawEpoch = activity.startTime.value().toString();
+
+                        // logString += "Raw: " + rawDate + ", UnixTime: " + rawEpoch + ", Adjusted: " + adjustedDate + "\n";
+                        totalDistance += activity.distance;
+                    }
+                    // else {iterate = 0;}
+                //}
+                    
+                activity = iter.next();
+                } 
+                // System.println(logString);
+                var distanceKm = totalDistance / 1000.0;
+                val = formatDistanceByWidth(distanceKm, width);
             }
-        } else if(complicationType == 22) { // Weekly run distance (miles)
+        }
+        
+        else if(complicationType == 22) { // Weekly run distance (miles)
             if (Toybox has :Complications) {
                 try {
                     var complication = Complications.getComplication(new Id(Complications.COMPLICATION_TYPE_WEEKLY_RUN_DISTANCE));
