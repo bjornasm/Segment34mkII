@@ -1386,16 +1386,15 @@ class Segment34View extends WatchUi.WatchFace {
                 
                 var garminUnixOffset = new Time.Duration(631065600); // Adjust for garmintime
                 var startOfWeekGarmin = startOfWeek.subtract(garminUnixOffset); 
+                
                 var iter = UserProfile.getUserActivityHistory();
                 
 
-                // var logString = "";
-
-                var activity = iter.next(); 
-                //                 while (activity != null) {
-                while (activity != null) {
-                    if (activity.distance != null && (activity.startTime.value() >= startOfWeekGarmin.value())){
-                        // var rawInfo = Gregorian.utcInfo(activity.startTime, Time.FORMAT_MEDIUM);
+                //var logString = "";
+                var iteractivity = iter.next(); 
+                while (iteractivity != null) {
+                    if (iteractivity.distance != null && (iteractivity.startTime.value() >= startOfWeekGarmin.value()) && (iteractivity.type == 1)){
+                        // var rawInfo = Gregorian.utcInfo(iteractivity.startTime, Time.FORMAT_MEDIUM);
                         // var rawDate = Lang.format(
                         //     "$1$:$2$:$3$ $4$ $5$ $6$ $7$",
                         //     [
@@ -1410,17 +1409,16 @@ class Segment34View extends WatchUi.WatchFace {
                         // );
 
 
-                        // var rawEpoch = activity.startTime.value().toString();
-
-                        // logString += "Raw: " + rawDate + ", UnixTime: " + rawEpoch + ", Adjusted: " + adjustedDate + "\n";
-                        totalDistance += activity.distance;
+                        // var rawEpoch = iteractivity.startTime.value().toString();
+                        //logString += "Raw: " + rawDate + ", UnixTime: " + rawEpoch + ", Adjusted: " + adjustedDate + "\n";Weekly
+                        totalDistance += iteractivity.distance;
                     }
                     // else {iterate = 0;}
                 //}
                     
-                activity = iter.next();
+                iteractivity = iter.next();
                 } 
-                // System.println(logString);
+                //System.println(logString);
                 var distanceKm = totalDistance / 1000.0;
                 val = formatDistanceByWidth(distanceKm, width);
             }
